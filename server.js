@@ -20,6 +20,31 @@ app.get("/", function (req, res) {
 
 const isValidDate = (date) => date instanceof Date && !isNaN(date.getTime())
 
+function setTimedOptimize(req,res) {
+  const time = req.params.time
+  // 输入的是 2012-12这种
+  // 输入的是 unix 时间
+  if(/\d{5,}/.test(time)) {
+    timeInt = parseInt(time)
+    // unix时间
+    res.json({
+      unix: timeInt,
+      utc: new Date(timeInt).toUTCString()
+    })
+  }
+  const dateObject = new Date(time)
+  if(dateObject.toString() === 'Invalid Date') {
+    res.json({
+      error: "Invaid Date"
+    })
+  } else {
+    res.json({
+      unix: dateObject.valueOf(),
+      utc: dateObject.toUTCString()
+    })
+  }
+}
+
 function setTime(req, res) {
   let { time } = req.params;
   if (!time) {
@@ -30,6 +55,8 @@ function setTime(req, res) {
     if (Number(time)) {
       time = Number(time);
       utc = new Date(time);
+      console.log(time);
+      console.log(utc);
       if (!isValidDate(utc)) {
         throw "Invalid Date";
       }
@@ -54,8 +81,13 @@ function setTime(req, res) {
   }
 }
 
-app.get("/api/timestamp/:time", setTime);
-app.get("/api/timestamp", setTime);
+app.get("/api/timestamp/:time", setTimedOptimize);
+app.get("/api/timestamp/", () => {
+  res.json({
+    unix: Date.now(),
+    utc: Date()
+  })
+});
 
 // your first API endpoint...
 app.get("/api/hello", function (req, res) {
